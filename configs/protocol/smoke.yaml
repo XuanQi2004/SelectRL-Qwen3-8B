@@ -1,0 +1,20 @@
+# Tiny but real end-to-end run (real model, real servers, real sandbox) to validate an installation.
+# Not a benchmark protocol: results are meaningless, only "it runs" matters.
+inherit: qwen3_8b_40960.yaml
+protocol: selectrl-smoke-v1
+data:
+  train: data/problems/train.jsonl.gz
+  val: data/problems/val.jsonl.gz
+  test: data/problems/val.jsonl.gz
+train:
+  steps: 2
+  problems_per_step: 4
+  rollouts_per_problem: 4
+  k_deploy: 2
+  ppo_mini_batches: 2
+  save_every: 1
+eval:
+  n_eval: 4
+  k_list: [1, 2, 4]
+  primary_metric: select@2
+  max_problems: 8

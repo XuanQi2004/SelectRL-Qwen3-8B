@@ -1,0 +1,58 @@
+# SelectRL Qwen3-8B protocol (LOCKED: hashed into bench/LOCK.json; scoring refuses modified copies).
+# protocol_hash(load_protocol(this file)) == 534c4dc6f841a404, the hash recorded by the released reference runs.
+protocol: selectrl-qwen3-8b-40960-user-variant-20261019
+
+model:
+  hf_id: Qwen/Qwen3-8B
+  revision: b968826d9c46dd6066d109eabc6255188de91218
+  local_dir: models/Qwen3-8B
+  max_model_len: 40960            # the model's native context window, used by every vLLM server
+  language_model_only: true
+
+prompt:
+  template: solve_v1              # selectrl/rollout/prompts.py
+  enable_thinking: false
+
+sampling:                         # training rollouts AND evaluation samples
+  temperature: 1.0
+  top_p: 1.0
+  top_k: -1
+  max_new_tokens: 40960           # no separate generation cap: a response may use the rest of the context window
+
+data:
+  train: data/problems/train.jsonl.gz      # training pool (2,121 problems)
+  val: data/problems/val.jsonl.gz          # validation split (266 problems)
+  test: data/problems/test.jsonl.gz        # held-out test split (422 problems)
+
+checker:
+  version: ccv1
+  time_limit_s: 6.0
+
+train:
+  steps: 100
+  problems_per_step: 32
+  rollouts_per_problem: 16
+  k_deploy: 8
+  ppo_mini_batches: 2
+  optimizer: adamw
+  lr: 1.0e-5
+  weight_decay: 0.0
+  adam_betas: [0.9, 0.99]
+  adam_eps: 1.0e-8
+  max_grad_norm: 1.0
+  loss_norm_tokens: 1024          # constant normalizer of the Dr. GRPO loss aggregation
+  lora:
+    r: 64
+    alpha: 128
+    dropout: 0.0
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  save_every: 10
+  data_seed: 1234
+  algo_timeout_s: 600
+
+eval:
+  n_eval: 32
+  k_list: [1, 2, 4, 8, 16]
+  primary_metric: select@8
+  seed: 20261016
+  final_only: true
