@@ -76,15 +76,16 @@ On that layout one run took 12 h 42 min end to end:
 | model | `Qwen/Qwen3-8B` @ `b968826`, bf16, `max_model_len` 40,960, thinking off |
 | sampling | temperature 1.0, top-p 1.0, no separate generation cap (a response may use the rest of the 40,960-token window); identical for training rollouts and evaluation |
 | training | 100 steps × 32 problems × 16 rollouts, 2 PPO mini-batches per step, LoRA r = 64 / alpha = 128 on all attention and MLP projections, AdamW lr 1e-5, grad-norm clip 1.0, data seed 1234 |
-| data | CodeContests, contest-disjoint splits: train 2,121 / validation 266 / test 422 problems |
-| checker | per problem: 4 input generators, 4 brute-force solvers and 2 validators, written once by a helper model and frozen.<br>Chk = public examples pass ∧ stress inputs finish in 6 s CPU ∧ agreement with confirmed brute-force outputs.<br>Signature = hash of normalized outputs on all check inputs |
+| data | CodeContests, contest-disjoint splits: train 2,121 / validation 266 / test 422 problems. The training pool keeps the candidates that the parent harness's base model (`Qwen/Qwen3.5-9B`) solved in 1-7 of 8 samples (`data/active/base_pass_summary.json`). It is a frozen asset |
+| checker | per problem: 4 input generators, 4 brute-force solvers and 2 validators, written once by the parent harness's base model (`Qwen/Qwen3.5-9B`, thinking off) and frozen.<br>Chk = public examples pass ∧ stress inputs finish in 6 s CPU ∧ agreement with confirmed brute-force outputs.<br>Signature = hash of normalized outputs on all check inputs |
 | metric | exact select@8 over all 8-subsets of 32 samples per problem, for the step-100 adapter. Also reported: pass@k (unbiased), select@k and cov@k for k ∈ {1, 2, 4, 8, 16}, checker pass rate |
 
 ## Released assets
 
-The GitHub release `v1.0.0` (being uploaded; `bench/LOCK.json`, `bench/ASSETS.sha256` and
-`bench/REFERENCE.sha256` are committed together with it) contains:
-- `selectrl-assets-v1.tar.gz`: `data/problems/{train,val,test}.jsonl.gz`, `data/splits/`, `data/filter_stats.json`, `data/active/base_pass_summary.json`, and `cache/checkers/` with its manifest. The sha256 is in `bench/ASSETS.sha256`, and per-file hashes are in `bench/LOCK.json`.
+The GitHub release [`v1.0.0`](https://github.com/XuanQi2004/SelectRL-Qwen3-8B/releases/tag/v1.0.0) contains:
+- `selectrl-data-v1.tar.gz`: `data/problems/{train,val,test}.jsonl.gz`, `data/splits/`, `data/filter_stats.json`, `data/active/base_pass_summary.json`.
+- `selectrl-checkers-v1.tar.gz.part000` … `.part007`: the frozen checker cache `cache/checkers/` (2,809 problems, with `MANIFEST.json`), split into 400 MB parts. `fetch_assets.sh` concatenates them before extraction.
+- Archive sha256 are in `bench/ASSETS.sha256`, and per-file hashes of the installed files are in `bench/LOCK.json`.
 - `reference-<run>.tar.gz`, one archive per reference run, unpacked to `results/baselines/<run>/`:
   - the step-100 LoRA adapter (`ckpt/step_0100/adapter/`, vLLM-loadable);
   - `manifest.json` and `metrics.jsonl`;

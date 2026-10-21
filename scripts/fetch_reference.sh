@@ -6,7 +6,7 @@
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]] && { sed -n '2,6p' "$0"; exit 0; }
-BASE_URL="${SELECTRL_REFERENCE_URL:-https://github.com/THUQiXuan/SelectRL-Qwen3-8B/releases/download/v1.0.0}"
+BASE_URL="${SELECTRL_REFERENCE_URL:-https://github.com/XuanQi2004/SelectRL-Qwen3-8B/releases/download/v1.0.0}"
 SHA_FILE="bench/REFERENCE.sha256"
 [[ -f "${SHA_FILE}" ]] || { log "ERROR: ${SHA_FILE} missing"; exit 1; }
 mkdir -p .downloads results/baselines
